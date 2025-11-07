@@ -2,6 +2,9 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtGui import QIcon
 
+from addnote import NoteWindow
+
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -39,15 +42,17 @@ class MyWindow(QMainWindow):
         self.add_note = QPushButton("add") #add note button
         layout.addWidget(self.add_note) #adding the button to the layout
         central_widget.setLayout(layout)
+        self.add_note.clicked.connect(self.open_new_window)
 
         self.add_list = QPushButton("list") #add list button
-        layout.addWidget(self.add_list) #adding the button to the layout
+        layout.addWidget(self.add_list) 
         central_widget.setLayout(layout)
 
-        self.add_reminder = QPushButton("reminder") #add note button
-        layout.addWidget(self.add_reminder) #adding the button to the layout
+        self.add_reminder = QPushButton("reminder") #add reminder button
+        layout.addWidget(self.add_reminder) 
         central_widget.setLayout(layout)
 
+        #This CSS is for the main window on how the buttons looks
         self.setStyleSheet("""
             QPushButton {
                 height: 80px;
@@ -69,6 +74,10 @@ class MyWindow(QMainWindow):
     def on_button_clicked(self):
         print("Button was clicked")
         self.add_note.setText("Clicked")
+
+    def open_new_window(self):
+        self.new_window = NoteWindow()
+        self.new_window.show()
 
 
 if __name__ == "__main__":
