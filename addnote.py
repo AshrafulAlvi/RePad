@@ -2,6 +2,8 @@ import sys
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
+import os
+import json
 
 #This is going to be the new window
 class NoteWindow(QWidget):
@@ -9,6 +11,8 @@ class NoteWindow(QWidget):
         super().__init__()
         self.setWindowTitle("New Pad")
         self.setGeometry(400,400, 400, 250)
+        self.color = "#F8F8F8"
+        self.file_path = "notes.json"
 
         main_layout = QVBoxLayout() #This is the main window Layout
 
@@ -35,7 +39,7 @@ class NoteWindow(QWidget):
                     border-radius: 4px;
                     border: 1px solid #ccc;
                 }}
-                QpushButton:hover {{
+                QPushButton:hover {{
                     border: 2px solid #555
                 }}
                 QPushButton:pressed {{
@@ -53,6 +57,7 @@ class NoteWindow(QWidget):
 
         #Setting up the buttons for the bottom layer
         save_button = QPushButton("Save")
+        save_button.clicked.connect(self.save_note)
         reminder_button = QPushButton("Set Reminder")
 
         bottom_buttons = [save_button, reminder_button]
@@ -74,12 +79,15 @@ class NoteWindow(QWidget):
             """)
         
         bottom_bar.addWidget(save_button)
+
+
         bottom_bar.addWidget(reminder_button)
 
         #This is where the user will write
         self.text_edit = QTextEdit("")
         font = QFont("Comic Sans MS", 14)
         self.text_edit.setFont(font)
+        self.text_edit.setStyleSheet(f"background-color: {self.color}")
 
         #This is where the layouts are actually laying out
         main_layout.addLayout(top_bar)
@@ -88,4 +96,31 @@ class NoteWindow(QWidget):
         self.setLayout(main_layout)
 
     def change_pad_color(self, color):
+        self.color = color
         self.text_edit.setStyleSheet(f"background-color: {color}")
+
+    def save_note(self):
+        text = self.text_edit.toPlainText()
+
+        if not text.strip():
+            return
+
+        if not os.path.exists(self.file_path):
+            notes = []
+            
+        else:
+            try:
+                with open(self.file_path, 'r') as f:
+                    notes = json.load(f)
+            except json.JSONDecodeError:
+                notes = []
+        
+        note_id = len(notes) + 1
+        new_note = {"ID": note_id,
+                    "content": text,
+                    "color": self.color}
+        notes.append(new_note)
+
+        with open(self.file_path, 'w') as f:
+            json.dump(notes, f, indent=4)
+            self.text_edit.clear()
