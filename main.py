@@ -1,8 +1,11 @@
+from addnote import NoteWindow
+from listwindow import ListWindow
+
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtGui import QIcon
 
-from addnote import NoteWindow
+
 
 
 class MyWindow(QMainWindow):
@@ -47,10 +50,12 @@ class MyWindow(QMainWindow):
         self.add_list = QPushButton("list") #add list button
         layout.addWidget(self.add_list) 
         central_widget.setLayout(layout)
+        self.add_list.clicked.connect(lambda: self.open_list_window("list"))
 
         self.add_reminder = QPushButton("reminder") #add reminder button
         layout.addWidget(self.add_reminder) 
         central_widget.setLayout(layout)
+        self.add_reminder.clicked.connect(lambda: self.open_list_window("reminder"))
 
         #This CSS is for the main window on how the buttons looks
         self.setStyleSheet("""
@@ -77,6 +82,19 @@ class MyWindow(QMainWindow):
     def open_new_window(self):
         self.new_window = NoteWindow()
         self.new_window.show()
+
+    def open_list_window(self, default_tab):
+        new_window_width = 400
+        new_window_height = 250
+
+        main_geo = self.geometry()
+        x = main_geo.x()
+        y = main_geo.y() - new_window_height - 10 # Above main window
+
+        self.list_window = ListWindow(default_tab)
+        self.list_window.setGeometry(x, y, new_window_width, new_window_height)
+        self.list_window.show()
+        
 
 
 if __name__ == "__main__":
