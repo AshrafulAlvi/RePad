@@ -72,7 +72,6 @@ class MyWindow(QMainWindow):
         """)
     
     def on_button_clicked(self):
-        print("Button was clicked")
         self.add_note.setText("Clicked")
 
     def open_new_window(self):

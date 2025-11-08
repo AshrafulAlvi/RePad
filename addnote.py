@@ -1,9 +1,13 @@
+from reminder_dialog import ReminderDialog
 import sys
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 import os
 import json
+import uuid
+
+
 
 #This is going to be the new window
 class NoteWindow(QWidget):
@@ -13,6 +17,7 @@ class NoteWindow(QWidget):
         self.setGeometry(400,400, 400, 250)
         self.color = "#F8F8F8"
         self.file_path = "notes.json"
+        self.reminder_datetime = None
 
         main_layout = QVBoxLayout() #This is the main window Layout
 
@@ -58,7 +63,9 @@ class NoteWindow(QWidget):
         #Setting up the buttons for the bottom layer
         save_button = QPushButton("Save")
         save_button.clicked.connect(self.save_note)
+
         reminder_button = QPushButton("Set Reminder")
+        reminder_button.clicked.connect(self.set_reminder)
 
         bottom_buttons = [save_button, reminder_button]
 
@@ -115,12 +122,24 @@ class NoteWindow(QWidget):
             except json.JSONDecodeError:
                 notes = []
         
-        note_id = len(notes) + 1
-        new_note = {"ID": note_id,
+        note_id = uuid.uuid4().hex
+        new_note = {"id": note_id,
                     "content": text,
-                    "color": self.color}
+                    "color": self.color,
+                    "reminder": {
+                        "enabled": self.reminder_datetime is not None,
+                        "datetime": self.reminder_datetime.toString(Qt.DateFormat.ISODate) if self.reminder_datetime else None
+                    }}
         notes.append(new_note)
 
         with open(self.file_path, 'w') as f:
             json.dump(notes, f, indent=4)
-            self.text_edit.clear()
+        self.text_edit.clear()
+        self.reminder_datetime = None
+
+    def set_reminder(self):
+        dlg = ReminderDialog(self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self.reminder_datetime = dlg.selected_datetime()
+        else:
+            return
