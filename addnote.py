@@ -2,21 +2,30 @@ from reminder_dialog import ReminderDialog
 import sys
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QDialog
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt
-import os
-import json
-import uuid
+from PyQt6.QtCore import Qt, pyqtSignal
+import os, json, uuid
+
 
 
 
 #This is going to be the new window
 class NoteWindow(QWidget):
-    def __init__(self):
+    note_saved = pyqtSignal()
+    def __init__(self, note_data=None):
         super().__init__()
         self.setWindowTitle("New Pad")
         self.setGeometry(400,400, 400, 250)
         self.color = "#F8F8F8"
         self.file_path = "notes.json"
+
+        self.edit_mode = note_data is not None
+        self.note_id = None
+
+        if note_data:
+            #Load existing note details
+            self.note_id = note_data.get("id")
+            self.color = note_data.get("color", self.color)
+
         self.reminder_datetime = None
 
         main_layout = QVBoxLayout() #This is the main window Layout
@@ -96,6 +105,11 @@ class NoteWindow(QWidget):
         self.text_edit.setFont(font)
         self.text_edit.setStyleSheet(f"background-color: {self.color}")
 
+        # If editing an existing note, prefill the content and color
+        if self.edit_mode and note_data:
+            self.text_edit.setPlainText(note_data.get("content", ""))
+            self.change_pad_color(self.color)
+
         #This is where the layouts are actually laying out
         main_layout.addLayout(top_bar)
         main_layout.addWidget(self.text_edit)
@@ -107,33 +121,62 @@ class NoteWindow(QWidget):
         self.text_edit.setStyleSheet(f"background-color: {color}")
 
     def save_note(self):
-        text = self.text_edit.toPlainText()
-
-        if not text.strip():
+        text = self.text_edit.toPlainText().strip()
+        if not text:
             return
 
-        if not os.path.exists(self.file_path):
-            notes = []
-            
-        else:
+        # Load existing notes
+        notes = []
+        if os.path.exists(self.file_path):
             try:
                 with open(self.file_path, 'r') as f:
                     notes = json.load(f)
             except json.JSONDecodeError:
-                notes = []
-        
-        note_id = uuid.uuid4().hex
-        new_note = {"id": note_id,
+                pass
+
+        # Helper to format reminder data safely
+        def make_reminder():
+            if self.reminder_datetime:
+                return {
+                    "enabled": True,
+                    "datetime": self.reminder_datetime.toString(Qt.DateFormat.ISODate)
+                }
+            else:
+                return {"enabled": False, "datetime": None}
+
+        if self.edit_mode and self.note_id:
+            # --- Edit existing note ---
+            updated = False
+            for n in notes:
+                if n["id"] == self.note_id:
+                    n["content"] = text
+                    n["color"] = self.color
+                    n["reminder"] = make_reminder()
+                    updated = True
+                    break
+            if not updated:
+                notes.append({
+                    "id": self.note_id,
                     "content": text,
                     "color": self.color,
-                    "reminder": {
-                        "enabled": self.reminder_datetime is not None,
-                        "datetime": self.reminder_datetime.toString(Qt.DateFormat.ISODate) if self.reminder_datetime else None
-                    }}
-        notes.append(new_note)
+                    "reminder": make_reminder()
+                })
+        else:
+            # --- Add new note ---
+            note_id = uuid.uuid4().hex
+            notes.append({
+                "id": note_id,
+                "content": text,
+                "color": self.color,
+                "reminder": make_reminder()
+            })
 
+        # --- Save to JSON ---
         with open(self.file_path, 'w') as f:
             json.dump(notes, f, indent=4)
+
+        # Notify & reset
+        self.note_saved.emit()
         self.text_edit.clear()
         self.reminder_datetime = None
 
