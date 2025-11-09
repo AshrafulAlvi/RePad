@@ -1,5 +1,6 @@
 from addnote import NoteWindow
 from listwindow import ListWindow
+from reminder import ReminderWatcher
 
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton, QSystemTrayIcon, QMenu
@@ -94,6 +95,10 @@ class MyWindow(QMainWindow):
 
         # Attach the menu to the tray icon
         self.tray_icon.setContextMenu(tray_menu)
+        
+        # Start reminder watcher
+        self.reminder_watcher = ReminderWatcher(self.tray_icon)
+        self.reminder_watcher.start()
 
 
     

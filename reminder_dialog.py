@@ -11,11 +11,12 @@ class ReminderDialog(QDialog):
         #small instruction to what to do in the window
         layout = QVBoxLayout(self)
         label = QLabel("Choose date and time")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(label)
 
         #basically setting up the default suggested time
         self.datetime_edit = QDateTimeEdit(self)
-        self.datetime_edit.setDisplayFormat("yyyy-MM-dd HH:mm")
+        self.datetime_edit.setDisplayFormat("yyyy-MM-dd HH:mm AP")
         min_dateTime = QDateTime.currentDateTime()
         self.datetime_edit.setMinimumDateTime(min_dateTime)
         default = min_dateTime.addSecs(3600)

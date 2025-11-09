@@ -12,6 +12,26 @@ class ListWindow(QWidget):
 
         layout = QVBoxLayout()
         self.tabs = QTabWidget()
+        self.tabs.setStyleSheet("""
+            QTabBar::tab {
+                background-color: #e8f0fe;
+                border: 1px solid #c0c0c0;
+                border-radius: 6px;
+                padding: 6px 20px;
+                margin: 4px;
+                font-weight: bold;
+            }
+            QTabBar::tab:selected {
+                background-color: #cbe4f9;
+                color: #000;
+            }
+            QTabWidget::pane {
+                border: 1px solid #d0d0d0;
+                border-radius: 6px;
+                padding: 5px;
+                margin-top: -2px;
+            }
+        """)
 
 
 

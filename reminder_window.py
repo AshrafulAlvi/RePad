@@ -67,7 +67,10 @@ class ReminderWindow(QWidget):
 
             # Creating top row
             top_row = QHBoxLayout()
-            note_btn = QPushButton(r['content'].splitlines()[0])
+            text = r['content'].split('\n', 2)[0][:60]
+            if len(r['content']) > 60:
+                text += "..."
+            note_btn = QPushButton(text)
             note_btn.setStyleSheet(f"background-color: {r['color']}; border-radius: 6px;")
             note_btn.setFixedHeight(35)
             note_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
