@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QSizePolicy, QScrollArea, QFrame
+from PyQt6.QtCore import pyqtSignal
 import json, os
 
 class ReminderWindow(QWidget):
+    reminder_updated = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -60,7 +62,8 @@ class ReminderWindow(QWidget):
         reminders = [n for n in notes if n.get("reminder", {}).get("enabled")]
 
         for r in reminders:
-            card_layout = QVBoxLayout()
+            card = QWidget()
+            card_layout = QVBoxLayout(card)
 
             # Creating top row
             top_row = QHBoxLayout()
@@ -93,7 +96,7 @@ class ReminderWindow(QWidget):
 
             card_layout.addLayout(top_row)
             card_layout.addLayout(bottom_row)
-            self.scroll_layout.addLayout(card_layout)
+            self.scroll_layout.addWidget(card)
             self.scroll_layout.addSpacing(8)
     
     def delete_reminder(self, note_id):
@@ -113,6 +116,7 @@ class ReminderWindow(QWidget):
             json.dump(updated, f, indent=4)
 
         # Clear and reload the UI
+        self.setUpdatesEnabled(False)
         while self.scroll_layout.count():
             item = self.scroll_layout.takeAt(0)
             if item.layout():
@@ -121,4 +125,8 @@ class ReminderWindow(QWidget):
                     if sub.widget():
                         sub.widget().deleteLater()
                 item.layout().deleteLater()
+            elif item.widget():
+                item.widget().deleteLater()
         self.load_reminders()
+        self.setUpdatesEnabled(True)
+        self.reminder_updated.emit()

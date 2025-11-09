@@ -89,8 +89,8 @@ class MyWindow(QMainWindow):
         quit_action = tray_menu.addAction("Quit")
 
         # Connect them
-        open_action.triggered.connect(self.showNormal)
-        quit_action.triggered.connect(self.showNormal)
+        open_action.triggered.connect(self.restore_from_tray)
+        quit_action.triggered.connect(QApplication.quit)
 
         # Attach the menu to the tray icon
         self.tray_icon.setContextMenu(tray_menu)
@@ -122,6 +122,11 @@ class MyWindow(QMainWindow):
             self.showNormal()
             self.raise_()
             self.activateWindow()
+    
+    def restore_from_tray(self):
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
 
     def closeEvent(self, event):
         #Ensure tray icon is removed properly on close.

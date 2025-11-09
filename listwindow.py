@@ -18,6 +18,7 @@ class ListWindow(QWidget):
         #making two blank tabs
         self.tab_notes = QWidget()
         self.tab_reminders = ReminderWindow()
+        self.tab_reminders.reminder_updated.connect(self.load_notes)
 
         self.tabs.addTab(self.tab_notes, "List")
         self.tabs.addTab(self.tab_reminders, "Reminders")
