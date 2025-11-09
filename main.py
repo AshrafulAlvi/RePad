@@ -2,7 +2,7 @@ from addnote import NoteWindow
 from listwindow import ListWindow
 
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton, QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QIcon
 
 class MyWindow(QMainWindow):
@@ -29,7 +29,7 @@ class MyWindow(QMainWindow):
         y = screen_height - window_height - margin
 
         self.setGeometry(int(x), int(y), window_width, window_height)  # x, y, width, height
-        self.setWindowIcon(QIcon('icon.png'))  # TODO Replace Icon later
+        self.setWindowIcon(QIcon('icon.png'))
 
 
         #This is for the buttons within the main window
@@ -54,6 +54,7 @@ class MyWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.add_reminder.clicked.connect(lambda: self.open_list_window("reminder"))
 
+        
         #This CSS is for the main window on how the buttons looks
         self.setStyleSheet("""
             QPushButton {
@@ -72,6 +73,29 @@ class MyWindow(QMainWindow):
                 background-color: #82c3f5;
             }
         """)
+
+        #System Tray Setup
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("icon.png"))
+        self.tray_icon.setToolTip("RePad - Notes & Reminders")
+        self.tray_icon.show()
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+
+        # Tray menu setup
+        tray_menu = QMenu()
+
+        # Add actions directly through the menu
+        open_action = tray_menu.addAction("Open Repad")
+        quit_action = tray_menu.addAction("Quit")
+
+        # Connect them
+        open_action.triggered.connect(self.showNormal)
+        quit_action.triggered.connect(self.showNormal)
+
+        # Attach the menu to the tray icon
+        self.tray_icon.setContextMenu(tray_menu)
+
+
     
     def on_button_clicked(self):
         self.add_note.setText("Clicked")
@@ -91,11 +115,28 @@ class MyWindow(QMainWindow):
         self.list_window = ListWindow(default_tab)
         self.list_window.setGeometry(x, y, new_window_width, new_window_height)
         self.list_window.show()
+
+    def on_tray_icon_activated(self, reason):
+        # Reopen main window when tray icon is clicked.
+        if reason == QSystemTrayIcon.ActivationReason.Trigger: # Left-click
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+
+    def closeEvent(self, event):
+        #Ensure tray icon is removed properly on close.
+        self.tray_icon.hide()
+        self.tray_icon.deleteLater()
+        QApplication.quit()
+        event.accept()
+
         
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)  # Create the application instance
+    app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(QIcon("icon.png"))
     window = MyWindow()
     window.show()
     sys.exit(app.exec())
