@@ -1,3 +1,4 @@
+from reminder_window import ReminderWindow
 from addnote import NoteWindow
 from PyQt6.QtWidgets import QWidget, QTabWidget, QVBoxLayout, QLabel, QScrollArea, QFrame, QPushButton, QHBoxLayout, QSizePolicy
 from PyQt6.QtCore import Qt
@@ -12,9 +13,11 @@ class ListWindow(QWidget):
         layout = QVBoxLayout()
         self.tabs = QTabWidget()
 
+
+
         #making two blank tabs
         self.tab_notes = QWidget()
-        self.tab_reminders = QWidget()
+        self.tab_reminders = ReminderWindow()
 
         self.tabs.addTab(self.tab_notes, "List")
         self.tabs.addTab(self.tab_reminders, "Reminders")

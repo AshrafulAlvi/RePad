@@ -5,9 +5,6 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
 from PyQt6.QtGui import QIcon
 
-
-
-
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
